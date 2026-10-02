@@ -1,2 +1,0 @@
-from . import test_purchase_order_line_description
-from . import test_purchase_order_line_description_ui

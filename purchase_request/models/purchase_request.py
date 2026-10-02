@@ -92,7 +92,7 @@ class PurchaseRequest(models.Model):
             (
                 "group_ids",
                 "in",
-                self.env.ref("purchase_request.group_purchase_request_manager").id,
+                self.env.ref("purchase_request.group_purchase_request_manager").ids,
             )
         ],
         index=True,

@@ -3,7 +3,6 @@
 
 from odoo import api, fields, models
 from odoo.exceptions import ValidationError
-from odoo.tools import float_compare
 
 
 class StockMove(models.Model):
@@ -112,20 +111,12 @@ class StockMove(models.Model):
             ):
                 vals["purchase_request_allocation_ids"] = []
                 new_move_qty = default.get("product_uom_qty") or move.product_uom_qty
-                rounding = move.product_id.uom_id.rounding
                 for alloc in move.purchase_request_allocation_ids.filtered(
                     "open_product_qty"
                 ):
                     if (
-                        float_compare(
-                            new_move_qty,
-                            0,
-                            precision_rounding=move.product_id.uom_id.rounding,
-                        )
-                        <= 0
-                        or float_compare(
-                            alloc.open_product_qty, 0, precision_rounding=rounding
-                        )
+                        move.product_id.uom_id.compare(new_move_qty, 0) <= 0
+                        or move.product_id.uom_id.compare(alloc.open_product_qty, 0)
                         <= 0
                     ):
                         break

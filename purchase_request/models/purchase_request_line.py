@@ -27,7 +27,7 @@ class PurchaseRequestLine(models.Model):
         tracking=True,
     )
     product_qty = fields.Float(
-        string="Quantity", tracking=True, digits="Product Unit of Measure"
+        string="Quantity", tracking=True, digits="Product Unit"
     )
     request_id = fields.Many2one(
         comodel_name="purchase.request",
@@ -89,7 +89,7 @@ class PurchaseRequestLine(models.Model):
 
     purchased_qty = fields.Float(
         string="RFQ/PO Qty",
-        digits="Product Unit of Measure",
+        digits="Product Unit",
         compute="_compute_purchased_qty",
     )
     purchase_lines = fields.Many2many(
@@ -106,7 +106,8 @@ class PurchaseRequestLine(models.Model):
         string="Purchase Status",
         selection=lambda self: self.env["purchase.order"]
         ._fields["state"]
-        ._description_selection(self.env),
+        ._description_selection(self.env)
+        + [("done", self.env._("Done"))],
         store=True,
     )
     move_dest_ids = fields.One2many(
@@ -122,21 +123,21 @@ class PurchaseRequestLine(models.Model):
     )
 
     qty_in_progress = fields.Float(
-        digits="Product Unit of Measure",
+        digits="Product Unit",
         readonly=True,
         compute="_compute_qty",
         store=True,
         help="Quantity in progress.",
     )
     qty_done = fields.Float(
-        digits="Product Unit of Measure",
+        digits="Product Unit",
         readonly=True,
         compute="_compute_qty",
         store=True,
         help="Quantity completed",
     )
     qty_cancelled = fields.Float(
-        digits="Product Unit of Measure",
+        digits="Product Unit",
         readonly=True,
         compute="_compute_qty_cancelled",
         store=True,
@@ -149,7 +150,7 @@ class PurchaseRequestLine(models.Model):
     )
     pending_qty_to_receive = fields.Float(
         compute="_compute_qty_to_buy",
-        digits="Product Unit of Measure",
+        digits="Product Unit",
         copy=False,
         string="Pending Qty to Receive",
         store=True,
@@ -295,8 +296,8 @@ class PurchaseRequestLine(models.Model):
         for rec in self:
             rec.purchased_qty = 0.0
             for line in rec.purchase_lines.filtered(lambda x: x.state != "cancel"):
-                if rec.product_uom_id and line.product_uom_id != rec.product_uom_id:
-                    rec.purchased_qty += line.product_uom_id._compute_quantity(
+                if rec.product_uom_id and line.uom_id != rec.product_uom_id:
+                    rec.purchased_qty += line.uom_id._compute_quantity(
                         line.product_qty, rec.product_uom_id
                     )
                 else:
@@ -346,7 +347,7 @@ class PurchaseRequestLine(models.Model):
     @api.model
     def _calc_new_qty(self, request_line, po_line=None, new_pr_line=False):
         # In Odoo 19, uom_po_id doesn't exist, use product.uom_id
-        purchase_uom = po_line.product_uom_id or request_line.product_id.uom_id
+        purchase_uom = po_line.uom_id or request_line.product_id.uom_id
         # TODO: Not implemented yet.
         #  Make sure we use the minimum quantity of the partner corresponding
         #  to the PO. This does not apply in case of dropshipping

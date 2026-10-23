@@ -18,7 +18,7 @@ class PurchaseRequest(models.Model):
     _name = "purchase.request"
     _description = "Purchase Request"
     _mail_post_access = "read"
-    _inherit = ["mail.thread", "mail.activity.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin"]  # noqa: RUF012
     _order = "id desc"
 
     @api.model
@@ -92,7 +92,7 @@ class PurchaseRequest(models.Model):
             (
                 "group_ids",
                 "in",
-                self.env.ref("purchase_request.group_purchase_request_manager").ids,
+                self.env.ref("purchase_request.group_purchase_request_manager").id,
             )
         ],
         index=True,

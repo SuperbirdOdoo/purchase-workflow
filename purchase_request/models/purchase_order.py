@@ -56,10 +56,10 @@ class PurchaseOrder(models.Model):
                         "date_planned": date_planned,
                     }
                     requests_dict[request_id][request_line.id] = data
-            for request_id in requests_dict:
+            for request_id, request_data in requests_dict.items():
                 request = request_obj.sudo().browse(request_id)
                 message = po._purchase_request_confirm_message_content(
-                    request, requests_dict[request_id]
+                    request, request_data
                 )
                 request.message_post(
                     body=Markup(message),

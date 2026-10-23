@@ -1,8 +1,6 @@
 # Copyright 2018-2019 ForgeFlow, S.L.
 # License LGPL-3.0 or later (https://www.gnu.org/licenses/lgpl-3.0).
-from datetime import datetime
-
-import pytz
+from datetime import UTC, datetime
 
 from odoo import api, fields, models
 from odoo.exceptions import UserError
@@ -140,10 +138,9 @@ class PurchaseRequestLineMakePurchaseOrder(models.TransientModel):
         return self.env["purchase.request.allocation"].create(vals)
 
     def _get_date_with_user_tz(self, date):
-        user_tz = pytz.timezone(self.env.user.tz or "UTC")
         return (
-            user_tz.localize(datetime(date.year, date.month, date.day))
-            .astimezone(pytz.utc)
+            datetime(date.year, date.month, date.day, tzinfo=self.env.tz)
+            .astimezone(UTC)
             .replace(tzinfo=None)
         )
 
@@ -327,9 +324,7 @@ class PurchaseRequestLineMakePurchaseOrderItem(models.TransientModel):
         readonly=False,
     )
     name = fields.Char(string="Description", required=True)
-    product_qty = fields.Float(
-        string="Quantity to purchase", digits="Product Unit"
-    )
+    product_qty = fields.Float(string="Quantity to purchase", digits="Product Unit")
     product_uom_id = fields.Many2one(
         comodel_name="uom.uom", string="UoM", required=True
     )

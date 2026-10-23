@@ -17,7 +17,7 @@ _STATES = [
 class PurchaseRequestLine(models.Model):
     _name = "purchase.request.line"
     _description = "Purchase Request Line"
-    _inherit = ["mail.thread", "mail.activity.mixin", "analytic.mixin"]
+    _inherit = ["mail.thread", "mail.activity.mixin", "analytic.mixin"]  # noqa: RUF012
     _order = "id desc"
 
     name = fields.Char(string="Description", tracking=True)
@@ -26,9 +26,7 @@ class PurchaseRequestLine(models.Model):
         string="UoM",
         tracking=True,
     )
-    product_qty = fields.Float(
-        string="Quantity", tracking=True, digits="Product Unit"
-    )
+    product_qty = fields.Float(string="Quantity", tracking=True, digits="Product Unit")
     request_id = fields.Many2one(
         comodel_name="purchase.request",
         string="Purchase Request",
@@ -104,10 +102,9 @@ class PurchaseRequestLine(models.Model):
     purchase_state = fields.Selection(
         compute="_compute_purchase_state",
         string="Purchase Status",
-        selection=lambda self: self.env["purchase.order"]
-        ._fields["state"]
-        ._description_selection(self.env)
-        + [("done", self.env._("Done"))],
+        selection=lambda self: (
+            self.env["purchase.order"]._fields["state"]._description_selection(self.env)
+        ),
         store=True,
     )
     move_dest_ids = fields.One2many(
